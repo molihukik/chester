@@ -20,6 +20,7 @@
       padding: 20px;
     }
     .container {
+      position: relative;
       background: #dff6ff;
       padding: 20px;
       border-radius: 20px;
@@ -37,13 +38,23 @@
       color: #3a3a3a;
       font-size: 1.5rem;
     }
+    .btn-wrapper {
+      position: relative;
+      width: 100%;
+      height: 60px;
+      margin-top: 15px;
+    }
     .btn {
-      margin: 10px;
+      margin: 5px;
       width: 100px;
     }
     #btn-no {
-      position: absolute;
+      display: inline-block;
+      position: relative; /* Awalnya relative */
+      transition: top 0.3s ease, left 0.3s ease;
+      z-index: 10;
     }
+
     @media (max-width: 576px) {
       h1 {
         font-size: 1.2rem;
@@ -52,20 +63,23 @@
         width: 90px;
         font-size: 0.9rem;
       }
+      .btn-wrapper {
+        height: 100px;
+      }
     }
   </style>
 </head>
 <body>
-      <!-- Backsound -->
+  <!-- Backsound -->
   <audio autoplay loop hidden>
     <source src="Blue.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
 
-  <div class="container">
+  <div class="container" id="container-box">
     <img src="LS.png" alt="Lisa Pic">
     <h1>Mau jadi teman selamanya? (temen idup :v)</h1>
-    <div class="d-flex justify-content-center flex-wrap">
+    <div class="d-flex justify-content-center flex-wrap btn-wrapper" id="btn-wrapper">
       <button id="btn-yes" class="btn btn-success">Iya</button>
       <button id="btn-no" class="btn btn-danger">Tidak</button>
     </div>
@@ -74,6 +88,45 @@
   <script>
     const btnNo = document.getElementById('btn-no');
     const btnYes = document.getElementById('btn-yes');
+    const wrapper = document.getElementById('btn-wrapper');
+
+    function randomPositionInContainer(btn, container, avoidBtn) {
+      const containerRect = container.getBoundingClientRect();
+      const btnWidth = btn.offsetWidth;
+      const btnHeight = btn.offsetHeight;
+
+      let newX, newY;
+      let overlap = true;
+      let attempt = 0;
+
+      while (overlap && attempt < 100) {
+        newX = Math.floor(Math.random() * (container.clientWidth - btnWidth));
+        newY = Math.floor(Math.random() * (container.clientHeight - btnHeight));
+
+        const avoidRect = avoidBtn.getBoundingClientRect();
+        const newRect = {
+          left: containerRect.left + newX,
+          top: containerRect.top + newY,
+          right: containerRect.left + newX + btnWidth,
+          bottom: containerRect.top + newY + btnHeight
+        };
+
+        const overlapX = !(newRect.right < avoidRect.left || newRect.left > avoidRect.right);
+        const overlapY = !(newRect.bottom < avoidRect.top || newRect.top > avoidRect.bottom);
+
+        overlap = overlapX && overlapY;
+        attempt++;
+      }
+
+      btn.style.left = `${newX}px`;
+      btn.style.top = `${newY}px`;
+    }
+
+    btnNo.addEventListener('mouseenter', function () {
+      // Ubah posisi jadi absolute agar bisa lari
+      btnNo.style.position = 'absolute';
+      randomPositionInContainer(btnNo, wrapper, btnYes);
+    });
 
     btnYes.addEventListener('click', function () {
       Swal.fire({
@@ -85,13 +138,6 @@
       }).then(() => {
         window.location.href = 'https://youtube.com/shorts/HM5OoneKoZI?feature=share';
       });
-    });
-
-    btnNo.addEventListener('mouseover', function () {
-      const x = Math.floor(Math.random() * (window.innerWidth - 100));
-      const y = Math.floor(Math.random() * (window.innerHeight - 100));
-      btnNo.style.left = `${x}px`;
-      btnNo.style.top = `${y}px`;
     });
   </script>
 </body>
